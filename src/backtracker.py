@@ -1,20 +1,12 @@
 #! /usr/bin/env python3
 
-from typing import List, Dict, Optional
+from typing import List, Dict
 from random import shuffle
 
-
-def safe_list_get(l, idx, default):
-    try:
-        return l[idx]
-    except IndexError:
-        return default
-
-
 class Labyrinth:
-    width: int = 10
-    height: int = 0
-    l: List[List[int]] = None
+    width: int
+    height: int
+    l: List[List[int]]
 
     directions: Dict[str, int] = {"N": 1, "S": 2, "E": 4, "W": 8}
     opposite: Dict[str, str] = {"N": "S", "S": "N", "W": "E", "E": "W"}
@@ -23,15 +15,15 @@ class Labyrinth:
     dy: Dict[str, int] = {"N": -1, "S": 1, "E": 0, "W": 0}
 
     def __str__(self) -> str:
-
-        # Als Zahlen drucken
         s = ""
-        for y in range(0, self.height):
-            s += f"{y=} "
-            for x in range(0, self.width):
-                s += f"{self.l[y][x]} "
-            s += "\n"
-        s += "\n"
+
+        # # Als Zahlen drucken
+        # for y in range(0, self.height):
+        #     s += f"{y=} "
+        #     for x in range(0, self.width):
+        #         s += f"{self.l[y][x]} "
+        #     s += "\n"
+        # s += "\n"
 
         # Als Labyrinth drucken
         # Zeilen
@@ -39,6 +31,7 @@ class Labyrinth:
         for y in range(0, self.height):
             s += f"{y}|"
 
+            # Spalten
             for x in range(0, self.width):
                 el = self.l[y][x]  # aktuelles Feld auslesen
 
@@ -55,13 +48,17 @@ class Labyrinth:
         s += "--" + "-" * (self.width * 2 + 1) + "\n"
         return s
 
-    def __init__(self, width=10, height=10):
+    def __init__(self, width:int =10, height:int =10) -> None:
         # Merken der Labyrinthgroesse
         self.width = width
         self.height = height
 
         # leeres Labyrinth
+
+        # Zeilen erzeugen
         self.l = [[]] * self.height
+
+        # Spalten erzeugen und mit 0 vorbelegen
         for y in range(0, self.height):
             self.l[y] = [0] * self.width
 
