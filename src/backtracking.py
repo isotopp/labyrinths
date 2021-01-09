@@ -1,6 +1,6 @@
 from typing import Optional
-from random import randrange, randint
-from labyrinth import Labyrinth, Pos
+from random import randrange
+from src.labyrinth import Labyrinth, Pos
 
 
 class Backtracking(Labyrinth):
@@ -52,13 +52,3 @@ class Backtracking(Labyrinth):
                 # guaranteed to stay on grid and change the world
                 self.make_passage(pos, d)
                 to_go -= 1  # one done
-
-
-if __name__ == "__main__":
-    lab = Backtracking()
-    lab.carve()
-    print(lab)
-
-    more = randint(5, 10)
-    lab.carve_more(more)
-    print(lab)
