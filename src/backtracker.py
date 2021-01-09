@@ -1,21 +1,38 @@
 #! /usr/bin/env python3
 
-from typing import List, Dict
+import sys
+from typing import List, Dict, Optional
 from random import shuffle
-import turtle
 from time import sleep
+
+import pygame
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (200, 50, 50)
+GREEN = (50, 200, 50)
+LIGHT_BLUE = (230, 230, 255)
 
 
 class Labyrinth:
+    # Grid size
     width: int
     height: int
     grid: List[List[int]]
 
+    # Einige Konstanten
     directions: Dict[str, int] = {"N": 1, "E": 2, "S": 4, "W": 8}
     opposite: Dict[str, str] = {"N": "S", "S": "N", "W": "E", "E": "W"}
 
     dx: Dict[str, int] = {"N": 0, "S": 0, "E": 1, "W": -1}
     dy: Dict[str, int] = {"N": -1, "S": 1, "E": 0, "W": 0}
+
+    # Einige Werte zum Malen
+    size: int = 30
+    line_width: int = 2
+
+    surface: pygame.surface.Surface
+
 
     def __str__(self) -> str:
         s = ""
@@ -44,6 +61,7 @@ class Labyrinth:
         for y in range(0, self.height):
             self.grid[y] = [0] * self.width
 
+        self.show_init()
         return
 
     def carve_from(self, x=0, y=0) -> None:
@@ -55,6 +73,7 @@ class Labyrinth:
         for d in directions:
             # neues Feld berechnen
             nx, ny = x + self.dx[d], y + self.dy[d]
+            self.show(red=(x, y), green=(nx, ny))
 
             # Wenn das neue Feld gültige Koordinaten hat:
             if 0 <= nx < self.width and 0 <= ny < self.height:
@@ -68,49 +87,87 @@ class Labyrinth:
                     # Weiter marschieren
                     self.carve_from(nx, ny)
 
-    def show_init(self) -> turtle.Turtle:
-        s = turtle.getscreen()
-        t = turtle.Turtle()
-        t.penup()
-        t.goto(-150, 150)
-        t.pendown()
 
-        return t
+    def wait(self) -> None:
+        # self.keywait()
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        sleep(0.05)
 
-    def square(self, t: turtle.Turtle, corners: int) -> None:
-        t.speed(0)
-        t.seth(0)
+    def keywait(self) -> None:
+        pygame.display.flip()
 
-        t.pendown()
-        for i in range(0,4):
-            p = 2**i
-            t.pencolor("black")
-            if corners & p:
-                t.pencolor("white")
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    return
+            sleep(0.05)
 
-            t.forward(30)
-            t.right(90)
+    def show_init(self) -> None:
+        pygame.init()
 
-        t.penup()
-        t.forward(30)
+        self.surface = pygame.display.set_mode((self.size * self.width+2,self.size*self.height+2))
+        self.surface.fill(WHITE)
+        pygame.display.flip()
 
-    def show(self):
-        t = self.show_init()
+        return
 
+    # NW  N  NE
+    #   W   E
+    # SW  S  SE
+
+    def square(
+        self, pos: tuple, corners: int, red: Optional[tuple] = None, green: Optional[tuple] = None
+    ) -> None:
+        xpos = pos[0]
+        ypos = pos[1]
+
+        nw = (xpos * self.size, ypos * self.size)
+        ne = ((xpos + 1) * self.size, (ypos) * self.size)
+        sw = (xpos * self.size, (ypos + 1) * self.size)
+        se = ((xpos + 1) * self.size, (ypos + 1) * self.size)
+
+        color = LIGHT_BLUE
+        if corners == 0:
+            color = BLACK
+        if red and pos == red:
+            color = RED
+        if green and pos == green:
+            color = GREEN
+        pygame.draw.rect(self.surface, color, nw + (self.size, self.size))
+
+        # North Border
+        if not (corners & 1):
+            pygame.draw.line(self.surface, BLACK, nw, ne, width=self.line_width)
+
+        # East Border
+        if not (corners & 2):
+            pygame.draw.line(self.surface, BLACK, ne, se, width=self.line_width)
+
+        # South Border
+        if not (corners & 4):
+            pygame.draw.line(self.surface, BLACK, sw, se, width=self.line_width)
+
+        # West Border
+        if not (corners & 8):
+            pygame.draw.line(self.surface, BLACK, nw, sw, width=self.line_width)
+
+    def show(self, red: Optional[tuple] = None, green: Optional[tuple] = None):
         for y in range(0, self.height):
             for x in range(0, self.width):
                 el = self.grid[y][x]
-                self.square(t, el)
-            t.seth(180)
-            t.forward(30 * self.width)
-            t.seth(270)
-            t.forward(30)
+                self.square((x, y), el, red, green)
 
-        sleep(10)
-
+        self.wait()
 
 if __name__ == "__main__":
     grid = Labyrinth()
     grid.carve_from()
-    print(grid)
     grid.show()
+    grid.keywait()
