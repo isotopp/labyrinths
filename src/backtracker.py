@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 
 import sys
-from typing import List, Dict, Optional
+from typing import List, Dict, Tuple, Optional, NewType
 from random import shuffle, randrange, choice, randint
 from time import sleep
 
 import pygame
+
+Pos = NewType('Pos', Tuple[int, int])
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -100,10 +102,9 @@ class Labyrinth:
     # SW  S  SE
 
     def square(
-        self, pos: tuple, red: Optional[tuple] = None, green: Optional[tuple] = None
+        self, pos: Pos, red: Optional[Pos] = None, green: Optional[Pos] = None
     ) -> None:
-        xpos = pos[0]
-        ypos = pos[1]
+        xpos, ypos = pos[0], pos[1]
         el = self.grid[ypos][xpos]
 
         nw = (xpos * self.size, ypos * self.size)
@@ -136,12 +137,29 @@ class Labyrinth:
         if not (el & 8):
             pygame.draw.line(self.surface, BLACK, nw, sw, width=self.line_width)
 
-    def show(self, red: Optional[tuple] = None, green: Optional[tuple] = None):
+    def show(self, red: Optional[Pos] = None, green: Optional[Pos] = None):
         for y in range(0, self.height):
             for x in range(0, self.width):
-                self.square((x, y), red, green)
+                self.square(Pos((x, y)), red, green)
 
         self.wait()
+
+    def is_in_grid(self, x: int, y:int ) -> bool:
+        if 0 <= x < self.width and 0 <= y < self.height:
+            return True
+        return False
+
+    def step(self, x: int, y: int, d: str) -> Tuple[int, int]:
+        directions = list(self.directions.keys())
+        if d not in directions:
+            raise ValueError(f"Invalid Direction {d=}")
+
+        if not self.is_in_grid(x, y):
+            raise ValueError(f"Invalid Position {x=}, {y=}")
+
+        nx, ny = x + self.dx[d], y + self.dy[d]
+
+        return nx, ny
 
     def carve_from(self, x=0, y=0) -> None:
         # Mögliche Schritte mischen
@@ -151,11 +169,11 @@ class Labyrinth:
         # Rundum durchprobieren
         for d in directions:
             # neues Feld berechnen
-            nx, ny = x + self.dx[d], y + self.dy[d]
-            self.show(red=(x, y), green=(nx, ny))
+            nx, ny = self.step(x, y, d)
+            self.show(red=Pos((x, y)), green=Pos((nx, ny)))
 
             # Wenn das neue Feld gültige Koordinaten hat:
-            if 0 <= nx < self.width and 0 <= ny < self.height:
+            if self.is_in_grid(nx, ny):
                 # Wenn das neue Feld leer ist:
                 if self.grid[ny][nx] == 0:
                     # Altes Feld: Mauer in die neue Richtung einreissen
@@ -188,14 +206,14 @@ class Labyrinth:
                 # Prüfe ob der neue Durchgang in ein valides Feld führt
                 nx, ny = x + self.dx[d], y + self.dy[d]
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    self.show(red=(x, y))  # vorher anzeigen, red
+                    self.show(red=Pos((x, y)))  # vorher anzeigen, red
                     self.wait()
 
                     # tut er, wir machen das Loch
                     self.grid[y][x] |= self.directions[d]
                     self.grid[ny][nx] |= self.directions[self.opposite[d]]
 
-                    self.show(green=(x, y))  # nachher anzeigen, green
+                    self.show(green=Pos((x, y)))  # nachher anzeigen, green
                     self.wait()
 
                     to_go -= 1  # Entsprechend runterzählen
