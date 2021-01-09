@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from random import randrange
 from src.labyrinth import Labyrinth, Pos
 
@@ -6,7 +6,7 @@ from src.labyrinth import Labyrinth, Pos
 class Backtracking(Labyrinth):
     """Build a labyrinth using a backtracking algorithm."""
 
-    def carve(self, pos: Optional[Pos] = None) -> None:
+    def carve(self, pos: Optional[Pos] = None, show: Any =None) -> None:
         """carve passages starting at Pos p using recursive backtracking.
 
         Carves passages into the labyrinth, starting at Pos p (Default: 0,0),
@@ -27,12 +27,15 @@ class Backtracking(Labyrinth):
                 # We stepped off the grid
                 continue
 
+            if show:
+                show(self, red=pos, green=np)
+
             # if the position is clean, make a passage, and recurse
             if self[np] == 0:
                 self.make_passage(pos, d)
-                self.carve(np)
+                self.carve(np, show=show)
 
-    def carve_more(self, walls_to_remove: int = 0):
+    def carve_more(self, walls_to_remove: int = 0, show: Any = None):
         """Remove walls_to_remove more walls, randomly.
 
         After applying carve(), we randomly delete walls_to_remove many more walls
@@ -49,6 +52,11 @@ class Backtracking(Labyrinth):
 
             # and check if deleting the wall would change things.
             if self.can_make_passage(pos, d):
+                new_pos = self.step(pos, d)
+
+                if show:
+                    show(self, red=pos, green=new_pos)
+
                 # guaranteed to stay on grid and change the world
                 self.make_passage(pos, d)
                 to_go -= 1  # one done
