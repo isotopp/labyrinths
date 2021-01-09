@@ -1,6 +1,6 @@
-from typing import List, Dict, Tuple, Optional, NewType
-from random import shuffle, randrange, choice, randint
-from labyrinth import Labyrinth, Pos, Direction
+from typing import Optional
+from random import randrange, randint
+from labyrinth import Labyrinth, Pos
 
 
 class Backtracking(Labyrinth):
@@ -23,7 +23,7 @@ class Backtracking(Labyrinth):
             # try to step into this direction
             try:
                 np = self.step(pos, d)
-            except ValueError as e:
+            except ValueError:
                 # We stepped off the grid
                 continue
 
