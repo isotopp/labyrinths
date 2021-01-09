@@ -109,7 +109,7 @@ Direction = NewType("Direction", str)
 
 
 class Labyrinth:
-    """ Store a labyrinth as a List of Lists of Integers.
+    """Store a labyrinth as a List of Lists of Integers.
 
     Passages exist in the 4 cardinal directions, N, E, S, and W. We store them
     as bit flags (N=1, E=2, S=4, W=8). When set, a passage exists from the current
@@ -133,20 +133,20 @@ class Labyrinth:
         Direction("N"): Direction("S"),
         Direction("S"): Direction("N"),
         Direction("W"): Direction("E"),
-        Direction("E"): Direction("W")
+        Direction("E"): Direction("W"),
     }
 
     dx: Dict[Direction, int] = {
         Direction("N"): 0,
         Direction("S"): 0,
         Direction("E"): 1,
-        Direction("W"): -1
+        Direction("W"): -1,
     }
     dy: Dict[Direction, int] = {
         Direction("N"): -1,
         Direction("S"): 1,
         Direction("E"): 0,
-        Direction("W"): 0
+        Direction("W"): 0,
     }
 
     def __init__(self, width: int = 10, height: int = 10) -> None:
@@ -203,7 +203,7 @@ class Labyrinth:
             return True
 
     def step(self, p: Pos, d: Direction) -> Pos:
-        """ Starting at Pos p, walk one step into Direction d, return a new position.
+        """Starting at Pos p, walk one step into Direction d, return a new position.
 
         Raise ValueError if the Direction is invalid.
         Raise ValueError if the initial position is invalid.
@@ -220,12 +220,14 @@ class Labyrinth:
 
         np = Pos((p[0] + self.dx[d], p[1] + self.dy[d]))
         if not self.position_valid(np):
-            raise ValueError(f"Invalid Position {np=}: Step from {p=} into {d=} leaves the grid.")
+            raise ValueError(
+                f"Invalid Position {np=}: Step from {p=} into {d=} leaves the grid."
+            )
 
         return np
 
     def make_passage(self, p: Pos, d: Direction) -> None:
-        """ At Pos p, make a passage into Direction d, also add the reverse passage.
+        """At Pos p, make a passage into Direction d, also add the reverse passage.
 
         Raise ValueError if the Direction is invalid.
         Raise ValueError if the Pos is invalid.
@@ -243,9 +245,8 @@ class Labyrinth:
 
         return
 
-
     def carve(self, pos: Optional[Pos] = None) -> None:
-        """ carve passages starting at Pos p using recursive backtracking.
+        """carve passages starting at Pos p using recursive backtracking.
 
         Carves passages into the labyrinth, starting at Pos p (Default: 0,0),
         using a recursive backtracking algorithm. Uses stack as deeply as the
@@ -272,7 +273,7 @@ class Labyrinth:
                 self.carve(np)
 
     def carve_more(self, walls_to_remove: int = 0):
-        """ Remove walls_to_remove more walls, randomly.
+        """Remove walls_to_remove more walls, randomly.
 
         After applying carve(), we randomly delete walls_to_remove many more walls
         to create for multiple valid pathes to the goal.
