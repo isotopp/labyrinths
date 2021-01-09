@@ -144,24 +144,27 @@ class Labyrinth:
 
         self.wait()
 
-    def is_in_grid(self, x: int, y:int ) -> bool:
+    def is_in_grid(self, p: Pos) -> bool:
+        x, y = p[0], p[1]
         if 0 <= x < self.width and 0 <= y < self.height:
             return True
         return False
 
-    def step(self, x: int, y: int, d: str) -> Tuple[int, int]:
+    def step(self, p: Pos, d: str) -> Pos:
         directions = list(self.directions.keys())
         if d not in directions:
             raise ValueError(f"Invalid Direction {d=}")
 
-        if not self.is_in_grid(x, y):
-            raise ValueError(f"Invalid Position {x=}, {y=}")
+        if not self.is_in_grid(p):
+            raise ValueError(f"Invalid Position {p=}")
 
-        nx, ny = x + self.dx[d], y + self.dy[d]
+        nx, ny = p[0] + self.dx[d], p[1] + self.dy[d]
+        return Pos((nx, ny))
 
-        return nx, ny
+    def carve_from(self, p: Optional[Pos] = None) -> None:
+        if not p:
+            p = Pos((0,0))
 
-    def carve_from(self, x=0, y=0) -> None:
         # Mögliche Schritte mischen
         directions = list(self.directions.keys())
         shuffle(directions)
@@ -169,51 +172,50 @@ class Labyrinth:
         # Rundum durchprobieren
         for d in directions:
             # neues Feld berechnen
-            nx, ny = self.step(x, y, d)
-            self.show(red=Pos((x, y)), green=Pos((nx, ny)))
+            np = self.step(p, d)
+            self.show(red=Pos(p), green=Pos(np))
 
             # Wenn das neue Feld gültige Koordinaten hat:
-            if self.is_in_grid(nx, ny):
+            if self.is_in_grid(np):
                 # Wenn das neue Feld leer ist:
-                if self.grid[ny][nx] == 0:
+                if self.grid[np[1]][np[0]] == 0:
                     # Altes Feld: Mauer in die neue Richtung einreissen
-                    self.grid[y][x] |= self.directions[d]
+                    self.grid[p[1]][p[0]] |= self.directions[d]
                     # Neues Feld: Mauer aus der neuen Richtung einreissen
-                    self.grid[ny][nx] |= self.directions[self.opposite[d]]
+                    self.grid[np[1]][np[0]] |= self.directions[self.opposite[d]]
 
                     # Weiter marschieren
-                    self.carve_from(nx, ny)
+                    self.carve_from(np)
 
     def carve_more(self, walls_to_remove: int = 0):
         to_go = walls_to_remove
         while to_go:
             # Zufällige x,y Position
-            x = randrange(self.width)
-            y = randrange((self.height))
+            p = Pos((randrange(self.width), randrange(self.height)))
 
             # Zufällige Richtung
             directions = list(self.directions.keys())
             d = choice(directions)
 
             # Element an dieser Position
-            el = self.grid[y][x]
+            el = self.grid[p[1]][p[0]]
 
             # Testweise Mauer weg hauen
             nel = el | self.directions[d]
-            print(f"{x=} {y=} {d=} {el=} {nel=}")
+            print(f"{p=} {d=} {el=} {nel=}")
 
             if nel != el:  # da wäre eine Mauer zum wegmachen
                 # Prüfe ob der neue Durchgang in ein valides Feld führt
-                nx, ny = x + self.dx[d], y + self.dy[d]
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    self.show(red=Pos((x, y)))  # vorher anzeigen, red
+                np = self.step(p, d)
+                if self.is_in_grid(np):
+                    self.show(red=p)  # vorher anzeigen, red
                     self.wait()
 
                     # tut er, wir machen das Loch
-                    self.grid[y][x] |= self.directions[d]
-                    self.grid[ny][nx] |= self.directions[self.opposite[d]]
+                    self.grid[p[1]][p[0]] |= self.directions[d]
+                    self.grid[np[1]][np[0]] |= self.directions[self.opposite[d]]
 
-                    self.show(green=Pos((x, y)))  # nachher anzeigen, green
+                    self.show(green=p)  # nachher anzeigen, green
                     self.wait()
 
                     to_go -= 1  # Entsprechend runterzählen
