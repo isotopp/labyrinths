@@ -173,7 +173,7 @@ class Labyrinth:
         for d in directions:
             # neues Feld berechnen
             np = self.step(p, d)
-            self.show(red=Pos(p), green=Pos(np))
+            self.show(red=p, green=np)
 
             # Wenn das neue Feld gültige Koordinaten hat:
             if self.is_in_grid(np):
