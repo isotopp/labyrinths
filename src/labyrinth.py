@@ -1,9 +1,5 @@
-#! /usr/bin/env python3
-
-import sys
 from typing import List, Dict, Tuple, Optional, NewType
 from random import shuffle, randrange, choice, randint
-from time import sleep
 
 # import pygame
 
@@ -122,7 +118,7 @@ class Labyrinth:
     grid: List[List[int]]
 
     # Einige Konstanten
-    directions: Dict[Direction, int] = {
+    _directions: Dict[Direction, int] = {
         Direction("N"): 1,
         Direction("E"): 2,
         Direction("S"): 4,
@@ -196,11 +192,17 @@ class Labyrinth:
 
     def direction_valid(self, d: Direction) -> bool:
         """ Predicate, returns true if the Direction d is valid """
-        directions = list(self.directions.keys())
-        if d not in directions:
-            return False
-        else:
-            return True
+        return d in self.directions()
+
+    def directions(self) -> List[Direction]:
+        return list(self._directions.keys())
+
+    def random_directions(self) -> List[Direction]:
+        """Return all cardinal directions in random order. """
+        d = self.directions()
+        shuffle(d)
+
+        return d
 
     def step(self, p: Pos, d: Direction) -> Pos:
         """Starting at Pos p, walk one step into Direction d, return a new position.
@@ -226,6 +228,25 @@ class Labyrinth:
 
         return np
 
+    def can_make_passage(self, p: Pos, d: Direction) -> bool:
+        """Predicate, true if making a passage at Pos p into Direction d would be valid, and change things."""
+        if not self.direction_valid(d):
+            raise ValueError(f"Invalid Direction: {d=}")
+
+        if not self.position_valid(p):
+            raise ValueError(f"Invalid Position: {p=}")
+
+        try:
+            np = self.step(p, d)
+        except ValueError as e:
+            # We stepped off the grid.
+            return False
+
+        # Success, if the world would change by removing this wall.
+        pre_elem = self[p]
+        post_elem = pre_elem | self._directions[d]
+        return pre_elem != post_elem
+
     def make_passage(self, p: Pos, d: Direction) -> None:
         """At Pos p, make a passage into Direction d, also add the reverse passage.
 
@@ -240,74 +261,12 @@ class Labyrinth:
             raise ValueError(f"Invalid Position {p=}")
 
         np = self.step(p, d)
-        self[p] |= self.directions[d]
-        self[np] |= self.directions[self.opposite[d]]
+        self[p] |= self._directions[d]
+        self[np] |= self._directions[self.opposite[d]]
 
         return
-
-    def carve(self, pos: Optional[Pos] = None) -> None:
-        """carve passages starting at Pos p using recursive backtracking.
-
-        Carves passages into the labyrinth, starting at Pos p (Default: 0,0),
-        using a recursive backtracking algorithm. Uses stack as deeply as the
-        longest possible path will be.
-        """
-        # Set start position
-        if not pos:
-            pos = Pos((0, 0))
-
-        # probe in random order
-        directions = list(self.directions.keys())
-        shuffle(directions)
-        for d in directions:
-            # try to step into this direction
-            try:
-                np = self.step(pos, d)
-            except ValueError as e:
-                # We stepped off the grid
-                continue
-
-            # if the position is clean, make a passage, and recurse
-            if self[np] == 0:
-                self.make_passage(pos, d)
-                self.carve(np)
-
-    def carve_more(self, walls_to_remove: int = 0):
-        """Remove walls_to_remove more walls, randomly.
-
-        After applying carve(), we randomly delete walls_to_remove many more walls
-        to create for multiple valid pathes to the goal.
-
-        We guarantee that each new passage is actually a wall removed, and that
-        new passages do not lead off the grid.
-        """
-        to_go = walls_to_remove
-        while to_go:
-            # Choose a random position and direction
-            pos = Pos((randrange(self.width), randrange(self.height)))
-            directions = list(self.directions.keys())
-            d = choice(directions)
-
-            # and check if deleting the wall would change things.
-            elem = self[pos]
-            new_elem = elem | self.directions[d]
-            if elem != new_elem:
-                # Also check if the passage would lead off the grid
-                try:
-                    newpos = self.step(pos, d)
-                except ValueError as e:
-                    continue
-
-                # The new passage will keep us on grid and change things
-                self.make_passage(pos, d)
-                to_go -= 1  # one done
 
 
 if __name__ == "__main__":
     labyrinth = Labyrinth()
-    labyrinth.carve()
-    print(labyrinth)
-
-    more = randint(5, 10)
-    labyrinth.carve_more(more)
     print(labyrinth)
