@@ -2,7 +2,7 @@
 
 import sys
 from typing import List, Dict, Optional
-from random import shuffle
+from random import shuffle, randrange, choice, randint
 from time import sleep
 
 import pygame
@@ -28,11 +28,10 @@ class Labyrinth:
     dy: Dict[str, int] = {"N": -1, "S": 1, "E": 0, "W": 0}
 
     # Einige Werte zum Malen
-    size: int = 30
-    line_width: int = 2
+    size: int = 100
+    line_width: int = 5
 
     surface: pygame.surface.Surface
-
 
     def __str__(self) -> str:
         s = ""
@@ -64,30 +63,6 @@ class Labyrinth:
         self.show_init()
         return
 
-    def carve_from(self, x=0, y=0) -> None:
-        # Mögliche Schritte mischen
-        directions = list(self.directions.keys())
-        shuffle(directions)
-
-        # Rundum durchprobieren
-        for d in directions:
-            # neues Feld berechnen
-            nx, ny = x + self.dx[d], y + self.dy[d]
-            self.show(red=(x, y), green=(nx, ny))
-
-            # Wenn das neue Feld gültige Koordinaten hat:
-            if 0 <= nx < self.width and 0 <= ny < self.height:
-                # Wenn das neue Feld leer ist:
-                if self.grid[ny][nx] == 0:
-                    # Altes Feld: Mauer in die neue Richtung einreissen
-                    self.grid[y][x] |= self.directions[d]
-                    # Neues Feld: Mauer aus der neuen Richtung einreissen
-                    self.grid[ny][nx] |= self.directions[self.opposite[d]]
-
-                    # Weiter marschieren
-                    self.carve_from(nx, ny)
-
-
     def wait(self) -> None:
         # self.keywait()
         pygame.display.flip()
@@ -112,7 +87,9 @@ class Labyrinth:
     def show_init(self) -> None:
         pygame.init()
 
-        self.surface = pygame.display.set_mode((self.size * self.width+2,self.size*self.height+2))
+        self.surface = pygame.display.set_mode(
+            (self.size * self.width + 2, self.size * self.height + 2)
+        )
         self.surface.fill(WHITE)
         pygame.display.flip()
 
@@ -123,10 +100,11 @@ class Labyrinth:
     # SW  S  SE
 
     def square(
-        self, pos: tuple, corners: int, red: Optional[tuple] = None, green: Optional[tuple] = None
+        self, pos: tuple, red: Optional[tuple] = None, green: Optional[tuple] = None
     ) -> None:
         xpos = pos[0]
         ypos = pos[1]
+        el = self.grid[ypos][xpos]
 
         nw = (xpos * self.size, ypos * self.size)
         ne = ((xpos + 1) * self.size, (ypos) * self.size)
@@ -134,7 +112,7 @@ class Labyrinth:
         se = ((xpos + 1) * self.size, (ypos + 1) * self.size)
 
         color = LIGHT_BLUE
-        if corners == 0:
+        if el == 0:
             color = BLACK
         if red and pos == red:
             color = RED
@@ -143,31 +121,93 @@ class Labyrinth:
         pygame.draw.rect(self.surface, color, nw + (self.size, self.size))
 
         # North Border
-        if not (corners & 1):
+        if not (el & 1):
             pygame.draw.line(self.surface, BLACK, nw, ne, width=self.line_width)
 
         # East Border
-        if not (corners & 2):
+        if not (el & 2):
             pygame.draw.line(self.surface, BLACK, ne, se, width=self.line_width)
 
         # South Border
-        if not (corners & 4):
+        if not (el & 4):
             pygame.draw.line(self.surface, BLACK, sw, se, width=self.line_width)
 
         # West Border
-        if not (corners & 8):
+        if not (el & 8):
             pygame.draw.line(self.surface, BLACK, nw, sw, width=self.line_width)
 
     def show(self, red: Optional[tuple] = None, green: Optional[tuple] = None):
         for y in range(0, self.height):
             for x in range(0, self.width):
-                el = self.grid[y][x]
-                self.square((x, y), el, red, green)
+                self.square((x, y), red, green)
 
         self.wait()
+
+    def carve_from(self, x=0, y=0) -> None:
+        # Mögliche Schritte mischen
+        directions = list(self.directions.keys())
+        shuffle(directions)
+
+        # Rundum durchprobieren
+        for d in directions:
+            # neues Feld berechnen
+            nx, ny = x + self.dx[d], y + self.dy[d]
+            self.show(red=(x, y), green=(nx, ny))
+
+            # Wenn das neue Feld gültige Koordinaten hat:
+            if 0 <= nx < self.width and 0 <= ny < self.height:
+                # Wenn das neue Feld leer ist:
+                if self.grid[ny][nx] == 0:
+                    # Altes Feld: Mauer in die neue Richtung einreissen
+                    self.grid[y][x] |= self.directions[d]
+                    # Neues Feld: Mauer aus der neuen Richtung einreissen
+                    self.grid[ny][nx] |= self.directions[self.opposite[d]]
+
+                    # Weiter marschieren
+                    self.carve_from(nx, ny)
+
+    def carve_more(self, walls_to_remove: int = 0):
+        to_go = walls_to_remove
+        while to_go:
+            # Zufällige x,y Position
+            x = randrange(self.width)
+            y = randrange((self.height))
+
+            # Zufällige Richtung
+            directions = list(self.directions.keys())
+            d = choice(directions)
+
+            # Element an dieser Position
+            el = self.grid[y][x]
+
+            # Testweise Mauer weg hauen
+            nel = el | self.directions[d]
+            print(f"{x=} {y=} {d=} {el=} {nel=}")
+
+            if nel != el:  # da wäre eine Mauer zum wegmachen
+                # Prüfe ob der neue Durchgang in ein valides Feld führt
+                nx, ny = x + self.dx[d], y + self.dy[d]
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    self.show(red=(x, y))  # vorher anzeigen, red
+                    self.wait()
+
+                    # tut er, wir machen das Loch
+                    self.grid[y][x] |= self.directions[d]
+                    self.grid[ny][nx] |= self.directions[self.opposite[d]]
+
+                    self.show(green=(x, y))  # nachher anzeigen, green
+                    self.wait()
+
+                    to_go -= 1  # Entsprechend runterzählen
+
 
 if __name__ == "__main__":
     grid = Labyrinth()
     grid.carve_from()
+    grid.show()
+    grid.wait()
+
+    more = randint(5, 10)
+    grid.carve_more(more)
     grid.show()
     grid.keywait()
