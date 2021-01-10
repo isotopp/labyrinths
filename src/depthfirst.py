@@ -17,31 +17,28 @@ class DepthFirst(Labyrinth):
         if not pos:
             pos = Pos((0, 0))
 
-        stack = []
-        stack.append(pos)
+        stack = [(pos, self.random_directions())]
 
         while len(stack):
             print(f"{stack=}")
-            pos = stack.pop()
+            pos, directions = stack.pop()
 
-            # probe in random order
-            directions = self.random_directions()
-            flag = True
-            for d in directions:
+            while directions:
+                d = directions.pop()
                 try:
                     np = self.step(pos, d)
                 except ValueError:
                     continue
 
+                if show:
+                    show(self, red=pos, green=np)
+
                 if self[np] == 0:
-                    if flag:
-                        self.make_passage(pos, d)
-                        stack.append(np)
-                        flag = False
-                    else:
-                        stack.insert(0, np)
-                    if show:
-                        show(self, red=pos, green=np)
+                    self.make_passage(pos, d)
+                    if directions:
+                        stack.append((pos, directions))
+                    stack.append((np, self.random_directions()))
+                    break
 
     def carve_more(self, walls_to_remove: int = 0, show: Any = None):
         """Remove walls_to_remove more walls, randomly.
