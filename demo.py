@@ -2,16 +2,16 @@
 
 from random import randrange
 
-from src.depthfirst import DepthFirst, Pos
+from src.backtracking import Backtracking, Pos
 from src.labyrinth_painter import LabyrinthPainter
 
 
-def show_and_wait(lab: DepthFirst, red: Pos, green: Pos):
+detyf show_and_wait(lab: Backtracking, red: Pos, green: Pos):
     painter.show(lab, red, green)
     LabyrinthPainter.wait()
 
 
-labyrinth = DepthFirst(width=20, height=20)
+labyrinth = Backtracking(width=20, height=20)
 painter = LabyrinthPainter(labyrinth, size=30, line_width=4)
 
 start = Pos((10,10))
