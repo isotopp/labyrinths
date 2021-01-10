@@ -6,7 +6,7 @@ from src.backtracking import Backtracking, Pos
 from src.labyrinth_painter import LabyrinthPainter
 
 
-detyf show_and_wait(lab: Backtracking, red: Pos, green: Pos):
+def show_and_wait(lab: Backtracking, red: Pos, green: Pos):
     painter.show(lab, red, green)
     LabyrinthPainter.wait()
 

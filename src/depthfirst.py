@@ -43,7 +43,6 @@ class DepthFirst(Labyrinth):
                     if show:
                         show(self, red=pos, green=np)
 
-
     def carve_more(self, walls_to_remove: int = 0, show: Any = None):
         """Remove walls_to_remove more walls, randomly.
 
