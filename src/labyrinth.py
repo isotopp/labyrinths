@@ -86,10 +86,7 @@ class Labyrinth:
 
     def position_valid(self, p: Pos) -> bool:
         """ Predicate, returns true if the position p: Pos is valid for this labyrinth """
-        if 0 <= p[0] < self.width and 0 <= p[1] < self.height:
-            return True
-        else:
-            return False
+        return 0 <= p[0] < self.width and 0 <= p[1] < self.height
 
     def direction_valid(self, d: Direction) -> bool:
         """ Predicate, returns true if the Direction d is valid """

@@ -3,7 +3,7 @@ from random import randrange
 from src.labyrinth import Labyrinth, Pos
 
 
-class Backtracking(Labyrinth):
+class DepthFirst(Labyrinth):
     """Build a labyrinth using a backtracking algorithm."""
 
     def carve(self, pos: Optional[Pos] = None, show: Any = None) -> None:
@@ -17,23 +17,32 @@ class Backtracking(Labyrinth):
         if not pos:
             pos = Pos((0, 0))
 
-        # probe in random order
-        directions = self.random_directions()
-        for d in directions:
-            # try to step into this direction
-            try:
-                np = self.step(pos, d)
-            except ValueError:
-                # We stepped off the grid
-                continue
+        stack = []
+        stack.append(pos)
 
-            if show:
-                show(self, red=pos, green=np)
+        while len(stack):
+            print(f"{stack=}")
+            pos = stack.pop()
 
-            # if the position is clean, make a passage, and recurse
-            if self[np] == 0:
-                self.make_passage(pos, d)
-                self.carve(np, show=show)
+            # probe in random order
+            directions = self.random_directions()
+            flag = True
+            for d in directions:
+                try:
+                    np = self.step(pos, d)
+                except ValueError:
+                    continue
+
+                if self[np] == 0:
+                    if flag:
+                        self.make_passage(pos, d)
+                        stack.append(np)
+                        flag = False
+                    else:
+                        stack.insert(0, np)
+                    if show:
+                        show(self, red=pos, green=np)
+
 
     def carve_more(self, walls_to_remove: int = 0, show: Any = None):
         """Remove walls_to_remove more walls, randomly.

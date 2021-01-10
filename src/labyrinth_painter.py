@@ -35,6 +35,10 @@ class LabyrinthPainter:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
         sleep(0.05)
 
     @staticmethod
@@ -46,8 +50,12 @@ class LabyrinthPainter:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    return
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        return
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
             sleep(0.05)
 
     def show_init(self, lab: Labyrinth) -> None:
