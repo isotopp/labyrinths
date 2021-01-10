@@ -17,14 +17,19 @@ class DepthFirst(Labyrinth):
         if not pos:
             pos = Pos((0, 0))
 
+        # Stackframe:
+        # (pos, directions): The current positions and the directions that still need checking.
         stack = [(pos, self.random_directions())]
 
-        while len(stack):
-            print(f"{stack=}")
+        while stack:
+            # print(f"{stack=}")
             pos, directions = stack.pop()
 
             while directions:
+                # Consume one direction
                 d = directions.pop()
+
+                # Can we go there?
                 try:
                     np = self.step(pos, d)
                 except ValueError:
@@ -33,12 +38,16 @@ class DepthFirst(Labyrinth):
                 if show:
                     show(self, red=pos, green=np)
 
+                # Is the new position np unused?
                 if self[np] == 0:
+                    # Remove wall
                     self.make_passage(pos, d)
+                    # If we still have directions to check, push current position back
                     if directions:
                         stack.append((pos, directions))
+                    # In any case, add the new position (and all directions)
                     stack.append((np, self.random_directions()))
-                    break
+                    break  # while directions: -> continue with np
 
     def carve_more(self, walls_to_remove: int = 0, show: Any = None):
         """Remove walls_to_remove more walls, randomly.
