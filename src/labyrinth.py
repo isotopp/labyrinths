@@ -48,18 +48,11 @@ class Labyrinth:
 
     def __init__(self, width: int = 10, height: int = 10) -> None:
         """ Construct a labyrinth with no passages in the given dimensions """
-        # Remeber labyrinth dimensions
         self.width = width
         self.height = height
-
-        # Create empty labyrinth
-        # Rows
         self.grid = [[]] * self.height
-
-        # Columns with 0's
         for y in range(0, self.height):
             self.grid[y] = [0] * self.width
-
         return
 
     def __repr__(self) -> str:
@@ -76,11 +69,20 @@ class Labyrinth:
 
     def __getitem__(self, item: Pos) -> int:
         """ Return the passages at position item: Pos from the labyrinth """
+        if not self.position_valid(item):
+            raise ValueError(f"Invalid Position: {item=}")
+
         r = self.grid[item[1]][item[0]]
         return r
 
     def __setitem__(self, key: Pos, value: int) -> None:
         """ Set the passages at position key: Pos to value: int """
+        if not self.position_valid(key):
+            raise ValueError(f"Invalid Position: {key=}")
+
+        if not (0<=value<=15):
+            raise ValueError(f"Invalid cell value: {value=}")
+
         self.grid[key[1]][key[0]] = value
         return
 
