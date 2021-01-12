@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Optional, NewType
+from typing import List, Dict, Tuple, Optional, NewType, Any
 from random import shuffle, randrange, choice, randint
 
 Pos = NewType("Pos", Tuple[int, int])
@@ -12,6 +12,8 @@ class Labyrinth:
     as bit flags (N=1, E=2, S=4, W=8). When set, a passage exists from the current
     cell into the direction indicated by the bitflag.
     """
+
+    carver: Any
 
     # Grid size
     width: int
@@ -46,14 +48,21 @@ class Labyrinth:
         Direction("W"): 0,
     }
 
-    def __init__(self, width: int = 10, height: int = 10) -> None:
+    def __init__(self, carver = None, width: int = 10, height: int = 10) -> None:
         """ Construct a labyrinth with no passages in the given dimensions """
+        if carver is None:
+            raise f"No carver class specified."
+
+        self.carver = carver()
         self.width = width
         self.height = height
         self.grid = [[]] * self.height
         for y in range(0, self.height):
             self.grid[y] = [0] * self.width
         return
+
+    def carve(self, pos: Optional[Pos] = None, show: Any = None) -> None:
+        self.carver.carve(self, pos, show)
 
     def __repr__(self) -> str:
         """ Dump the current labyrinths passages as raw integer values """

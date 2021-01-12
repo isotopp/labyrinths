@@ -1,29 +1,29 @@
-from typing import Any
+from typing import Any, Optional
 from random import choice, randrange
 from src.labyrinth import Labyrinth, Pos, Direction
 
 
-class BinaryTree(Labyrinth):
+class BinaryTree:
     """Build a labyrinth using a backtracking algorithm."""
 
-    def carve(self, show: Any = None) -> None:
+    def carve(self, lab: Labyrinth, pos: Optional[Pos] = None, show: Any = None):
         """carve passages starting at Pos p using binary tree algo.
         """
-        for y in range(0, self.height):
-            for x in range(0, self.width):
+        for y in range(0, lab.height):
+            for x in range(0, lab.width):
                 pos = Pos((x, y))
                 candidates = []
-                if self.can_make_passage(pos, Direction("N")):
+                if lab.can_make_passage(pos, Direction("N")):
                     candidates.append(Direction("N"))
-                if self.can_make_passage(pos, Direction("E")):
+                if lab.can_make_passage(pos, Direction("E")):
                     candidates.append(Direction("E"))
 
                 try:
                     d = choice(candidates)
                 except IndexError:
                     continue
-                self.make_passage(pos, d)
+                lab.make_passage(pos, d)
 
                 if show:
-                    np = self.step(pos, d)
-                    show(self, red=pos, green=np)
+                    np = lab.step(pos, d)
+                    show(lab, red=pos, green=np)

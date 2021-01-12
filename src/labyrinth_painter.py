@@ -39,7 +39,7 @@ class LabyrinthPainter:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-        sleep(0.05)
+        # sleep(0.05)
 
     @staticmethod
     def keywait() -> None:

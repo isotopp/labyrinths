@@ -1,12 +1,11 @@
 from typing import Optional, Any
-from random import randrange
 from src.labyrinth import Labyrinth, Pos
 
 
-class DepthFirst(Labyrinth):
+class DepthFirst:
     """Build a labyrinth using a backtracking algorithm."""
 
-    def carve(self, pos: Optional[Pos] = None, show: Any = None) -> None:
+    def carve(self, lab: Labyrinth, pos: Optional[Pos] = None, show: Any = None) -> None:
         """carve passages starting at Pos p using recursive backtracking.
 
         Carves passages into the labyrinth, starting at Pos p (Default: 0,0),
@@ -19,7 +18,7 @@ class DepthFirst(Labyrinth):
 
         # Stackframe:
         # (pos, directions): The current positions and the directions that still need checking.
-        stack = [(pos, self.random_directions())]
+        stack = [(pos, lab.random_directions())]
 
         while stack:
             # print(f"{stack=}")
@@ -31,20 +30,20 @@ class DepthFirst(Labyrinth):
 
                 # Can we go there?
                 try:
-                    np = self.step(pos, d)
+                    np = lab.step(pos, d)
                 except ValueError:
                     continue
 
                 if show:
-                    show(self, red=pos, green=np)
+                    show(lab, red=pos, green=np)
 
                 # Is the new position np unused?
-                if self[np] == 0:
+                if lab[np] == 0:
                     # Remove wall
-                    self.make_passage(pos, d)
+                    lab.make_passage(pos, d)
                     # If we still have directions to check, push current position back
                     if directions:
                         stack.append((pos, directions))
                     # In any case, add the new position (and all directions)
-                    stack.append((np, self.random_directions()))
+                    stack.append((np, lab.random_directions()))
                     break  # while directions: -> continue with np
