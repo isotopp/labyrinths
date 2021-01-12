@@ -2,20 +2,20 @@
 
 from random import randrange
 
-from src.backtracking import Backtracking, Pos
+from src.sidewinder import Sidewinder, Pos
 from src.labyrinth_painter import LabyrinthPainter
 
 
-def show_and_wait(lab: Backtracking, red: Pos, green: Pos):
+def show_and_wait(lab: Sidewinder, red: Pos, green: Pos):
     painter.show(lab, red, green)
     LabyrinthPainter.wait()
 
 
-labyrinth = Backtracking(width=20, height=20)
+labyrinth = Sidewinder(width=20, height=20)
 painter = LabyrinthPainter(labyrinth, size=30, line_width=4)
 
-start = Pos((10,10))
-labyrinth.carve(start, show=show_and_wait)
+# start = Pos((10,10))
+labyrinth.carve(show=show_and_wait)
 # painter.show(labyrinth)
 # print(labyrinth)
 
