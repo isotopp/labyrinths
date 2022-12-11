@@ -22,4 +22,5 @@ python demo.py
 ## Demo Screenshot
 
 ![](doc/screenshot.png)
+
 *Screenshot taken while the DepthFirst carver is busy.*
