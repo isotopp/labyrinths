@@ -24,6 +24,6 @@ for c in [BinaryTree, Sidewinder, Backtracking, DepthFirst]:
         green = Pos((randrange(0, 20), randrange(0, 20)))
         if red != green:
             break
-    print(f"{red=} {green=}")
+    print(f"carver: {c} {red=} {green=}")
     painter.show(labyrinth, red=red, green=green)
     LabyrinthPainter.keywait()
